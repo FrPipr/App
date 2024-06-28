@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Demo</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <style>
+        #chat-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot Demo</h1>
+
+    <div id="qr-container">
+        <video id="preview"></video>
+        <button id="stop-scan-btn">Stop Scanning</button>
+    </div>
+
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="user-input" placeholder="Type your message..." disabled>
+        <button id="send-btn" disabled>Send</button>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+            let itemCode = '';
+            let botResponded = false;
+
+            scanner.addListener('scan', function(content) {
+                itemCode = content;
+                $('#qr-container').hide();
+                $('#chat-container').show();
+                sendScanData(itemCode);
+                scanner.stop();
+            });
+
+            Instascan.Camera.getCameras().then(function(cameras) {
+                if (cameras.length > 0) {
+                    scanner.start(cameras[0]);
+                } else {
+                    console.error('No cameras found.');
+                }
+            }).catch(function(e) {
+                console.error(e);
+            });
+
+            $('#stop-scan-btn').click(function() {
+                scanner.stop();
+                $('#qr-container').hide();
+            });
+
+            function sendScanData(code) {
+                $.ajax({
+                    url: '/scan',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ item_code: code }),
+                    success: function(response) {
+                        $('#chat-messages').append('<div>Bot: ' + response.message + '</div>');
+                        $('#user-input').prop('disabled', false);
+                        $('#send-btn').prop('disabled', false);
+                        botResponded = true;
+                        scrollToBottom();
+                    },
+                    error: function(error) {
+                        console.log('Error:', error);
+                    }
+                });
+            }
+
+            $('#send-btn').click(function() {
+                if (botResponded) {
+                    sendMessage();
+                }
+            });
+
+            $('#user-input').keypress(function(event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13' && botResponded) {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                var message = $('#user-input').val().trim();
+                if (message !== '') {
+                    $('#chat-messages').append('<div>You: ' + message + '</div>');
+                    $('#user-input').val('');
+                    scrollToBottom();
+                    sendRequest(message);
+                }
+            }
+
+            function sendRequest(message) {
+                $('#user-input').prop('disabled', true);
+                $('#send-btn').prop('disabled', true);
+                botResponded = false;
+
+                $.ajax({
+                    url: '/ask',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: message, item_code: itemCode }),
+                    success: function(response) {
+                        $('#chat-messages').append('<div>Bot: ' + response.message + '</div>');
+                        $('#user-input').prop('disabled', false);
+                        $('#send-btn').prop('disabled', false);
+                        botResponded = true;
+                        scrollToBottom();
+                    },
+                    error: function(error) {
+                        console.log('Error:', error);
+                    }
+                });
+            }
+
+            function scrollToBottom() {
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }
+        });
+    </script>
+</body>
+</html>
