@@ -2,14 +2,21 @@ from langchain_community.llms import Ollama
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from flask import Flask, render_template, request, jsonify
-app = Flask(__name__)
+
 import prompts_variables_storage
+
+app = Flask(__name__)
+
 llm = Ollama(model="llama3")
+#llm = Ollama(model="gemma2")
+#llm = Ollama(model="phi3")
 
 chat_history = []
-start = prompts_variables_storage.initprompt
+start = prompts_variables_storage.smaller_initprompt
 product_details=prompts_variables_storage.product
-prompt_template_msg="{start} this is your data {product_details}"
+
+prompt_template_msg="{start} This is your knowledge base: {product_details}"
+
 prompt_template = ChatPromptTemplate.from_messages(
     [
         (
@@ -25,15 +32,15 @@ chain = prompt_template | llm
 
 def chatbot_response(user_prompt, itemcode):
     question = "You: "+ user_prompt
-    print(question)
+    
     if question == "done":
-        return
+        return "Bye bye"
 
     # response = llm.invoke(question)
     response = chain.invoke({"input": question, "chat_history": chat_history,"start":start,"product_details":product_details})
     chat_history.append(HumanMessage(content=question))
     chat_history.append(AIMessage(content=response))
-
+    print(chat_history)
     return response
 
 
