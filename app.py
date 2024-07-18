@@ -15,7 +15,7 @@ llm = Ollama(model="llama3")
 
 chat_history = []
 start = prompts_variables_storage.smaller_initprompt
-productinfo= "no information available"
+productinfo= "No information available for this product at the moment"
 
 def init_variables(productinfo):
     prompt_template_msg="{start} This is your knowledge base: {product_details}"
@@ -54,16 +54,19 @@ def index():
 @app.route('/scan', methods=['POST'])
 def scan():
     item_code = request.json['item_code']
-
+    print("ATTEMPTING TO CONNECT:")
      # Send request to JavaScript server to get product details
-    response = requests.post('http://localhost:3000/readProduct', json={'productId': item_code})
-    if response.status_code == 200:
-        productinfo = response.json()
-        
-        globals()["productinfo"]=productinfo
-        initial_message = f"Hello, you just scanned the item {item_code}. What would you like to know about it?"
-    else:
-        initial_message = f"Hello, you just scanned the item {item_code}. At the moment i'm unable to retrieve product details."
+    try: 
+        response = requests.post('http://localhost:3000/readProduct', json={'productId': item_code})
+        if response.status_code == 200:
+            productinfo = response.json()
+            globals()["productinfo"]=productinfo
+            initial_message = f"Hello, you just scanned the item {item_code}. What would you like to know about it?"
+        else:
+            initial_message = f"Hello, you just scanned the item {item_code}. At the moment i'm unable to retrieve product details."
+
+    except: initial_message = "Cannot connect to the server"
+    
     return jsonify({'message': initial_message, 'item_code': item_code})
 
 @app.route('/ask', methods=['POST'])
