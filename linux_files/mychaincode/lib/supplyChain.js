@@ -10,19 +10,25 @@ class SupplyChainContract extends Contract {
         const products = [
             {
                 ID: 'PROD1',
+                Name: 'Product1',
                 Manufacturer: 'Company A',
                 CreationDate: '2023-01-01',
                 ExpiryDate: '2024-01-01',
                 Ingredients: 'Ingredient1, Ingredient2',
-                Allergens: 'None'
+                Allergens: 'Allergen 1',
+                nutritional_information: 'NI1',
+                Moreinfo: ''
             },
             {
                 ID: 'PROD2',
+                Name: 'Product2',
                 Manufacturer: 'Company B',
                 CreationDate: '2023-02-01',
                 ExpiryDate: '2024-02-01',
                 Ingredients: 'Ingredient3, Ingredient4',
-                Allergens: 'Peanuts'
+                Allergens: 'none',
+                nutritional_information: 'NI2',
+                Moreinfo: 'Info2'
             }
         ];
 
@@ -33,7 +39,7 @@ class SupplyChainContract extends Contract {
         }
     }
 
-    async createProduct(ctx, id, manufacturer, creationDate, expiryDate, ingredients, allergens) {
+    async createProduct(ctx, id, name, manufacturer, creationDate, expiryDate, ingredients, allergens, nutritional_information, moreinfo) {
         console.log(`Creating product ${id}`);
         const exists = await this.ProductExists(ctx, id);
         if (exists) {
@@ -41,11 +47,14 @@ class SupplyChainContract extends Contract {
         }
         const product = {
             ID: id,
+            Name: name,
             Manufacturer: manufacturer,
             CreationDate: creationDate,
             ExpiryDate: expiryDate,
             Ingredients: ingredients,
-            Allergens: allergens
+            Allergens: allergens,
+            Nutritional_information: nutritional_information,
+            Moreinfo: moreinfo
         };
 
         await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(product))));
@@ -60,7 +69,7 @@ class SupplyChainContract extends Contract {
         }
         return productJSON.toString();
     }
-    async UpdateProduct(ctx, id, manufacturer, creationDate, expiryDate, ingredients, allergens) {
+    async UpdateProduct(ctx, id, name, manufacturer, creationDate, expiryDate, ingredients, allergens, nutritional_information, moreinfo) {
         const exists = await this.ProductExists(ctx, id);
         if (!exists) {
             throw new Error(`The product ${id} does not exist`);
@@ -69,11 +78,14 @@ class SupplyChainContract extends Contract {
         // overwriting original product with new product
         const updatedProduct = {
             ID: id,
+            Name: name,
             Manufacturer: manufacturer,
             CreationDate: creationDate,
             ExpiryDate: expiryDate,
             Ingredients: ingredients,
-            Allergens: allergens
+            Allergens: allergens,
+            Nutritional_information: nutritional_information,
+            Moreinfo: moreinfo
         };
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
         return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(updatedProduct))));

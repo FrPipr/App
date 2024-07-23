@@ -1,0 +1,11 @@
+{
+  "ID": "0001",
+  "Name": "Margherita Pizza",
+  "Ingredients": "Wheat flour, Water, Mozzarella cheese, Tomato sauce, Olive oil, Salt, Yeast, Basil",
+  "Allergens": "wheat, dairy",
+  "ExpiryDate": "2025-12-31",
+  "CreationDate": "2024-07-23",
+  "Manufacturer": "Pizza World Inc.",
+  "Nutritional_information": "Calories: 250 kcal per slice, Protein: 12g, Fat: 10g, Carbohydrates: 30g, Fiber: 2g, Sugar: 3g",
+  "Moreinfo": "Preheat oven to 220°C (428°F). Bake for 10-12 minutes until crust is golden brown. Keep refrigerated at max 5°C. Do not refreeze after thawing. Best consumed within 3 days of opening."
+}

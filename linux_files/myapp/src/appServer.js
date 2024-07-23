@@ -106,23 +106,23 @@ async function main() {
         // Get the smart contract from the network.
         const contract = network.getContract(chaincodeName);
 
-        // Initialize a set of asset data on the ledger using the chaincode 'InitLedger' function.
+        // Initialize a set of product data on the ledger using the chaincode 'InitLedger' function.
         await initLedger(contract);
 
-        // Return all the current assets on the ledger.
-        //await getAllAssets(contract);
+        // Return all the current Products on the ledger.
+        //await getAllProducts(contract);
 
-        // Create a new asset on the ledger.
-        await createProduct(contract);
+        // Create a new product on the ledger.
+        await createProductDefault(contract);
 
-        // Update an existing asset asynchronously.
-        //await transferAssetAsync(contract);
+        // Update an existing product asynchronously.
+        //await transferProductAsync(contract);
 
         // Get the procut details by productID.
         //await readProductByID(contract);
 
-        // Update a asset which does not exist.
-        //await updateNonExistentAsset(contract);
+        // Update a product which does not exist.
+        //await updateNonExistentProduct(contract);
     } finally {
         gateway.close();
         client.close();
@@ -192,19 +192,41 @@ async function initLedger(contract) {
 }
 
 
-async function createProduct(contract) {
+async function createProductDefault(contract) {
     console.log(
-        '\n--> Submit Transaction: CreateProduct, creates new product with ID, Manufacturer, CreationDate, ExpiryDate, Ingredients and Allergens arguments'
+        '\n--> Submit Transaction: CreateProduct, creates new product with ID, Name, Manufacturer, CreationDate, ExpiryDate, Ingredients, Nutritional_information and Allergens arguments'
     );
 
     await contract.submitTransaction(
         'createProduct',
         productId,
+        'NewProduct',
         'Manifacturer server',
         '01/11/2011',
         '02/02/2022',
         'Water, Flowr',
-        'Flour'
+        '100% carbs',
+        'Yeast',
+        ''
+    );
+
+    console.log('*** Transaction committed successfully');
+}
+
+async function createProduct(contract, productData) {
+    console.log('\n--> Submit Transaction: CreateProduct, creates new product with provided arguments');
+    const { ID, Name, Manufacturer, CreationDate, ExpiryDate, Ingredients, Allergens, Nutritional_information, Moreinfo } = productData;
+    await contract.submitTransaction(
+        'createProduct',
+        ID,
+        Name,
+        Manufacturer,
+        CreationDate,
+        ExpiryDate,
+        Ingredients,
+        Allergens,
+        Nutritional_information,
+        Moreinfo
     );
 
     console.log('*** Transaction committed successfully');
@@ -248,7 +270,7 @@ function displayInputParameters() {
 }
 
 async function readProductByID(contract, productId) {
-    console.log('\n--> Evaluate Transaction: ReadProduct, function returns product attributes');
+    console.log('\n--> Evaluate Transaction: ReadProduct, function returns product attributes');    
     const resultBytes = await contract.evaluateTransaction('ReadProduct', productId);
     const resultJson = utf8Decoder.decode(resultBytes);
     const result = JSON.parse(resultJson);
@@ -257,7 +279,7 @@ async function readProductByID(contract, productId) {
 }
 
 app.get('/readProduct', async (req, res) => {
-    const { productId } = req.body;
+    const { productId } = req.query;
     try {
         const network = gateway.getNetwork(channelName);
         const contract = network.getContract(chaincodeName);
@@ -265,6 +287,44 @@ app.get('/readProduct', async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error reading product by ID:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/uploadProduct', async (req, res) => {
+    const productData = req.body;
+    console.log('Received product data:', productData);
+
+    const { ID } = productData;
+
+    try {
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+
+        // Check if product already exists
+        try {
+            const existingProduct = await readProductByID(contract, ID);
+            if (existingProduct) {
+                res.status(400).json({ message: `Product with ID ${ID} already exists.` });
+                return;
+            }
+        } catch (error) {
+            if (error.message.includes(`The product ${ID} does not exist`)) {
+                // This is expected if the product doesn't exist, so we can continue
+                console.log('Product not found, proceeding to create it.');
+            } else {
+                // Unexpected error
+                console.error('Error checking for existing product:', error);
+                res.status(500).json({ message: 'Failed to check for existing product.' });
+                return;
+            }
+        }
+
+        await createProduct(contract, productData);
+        res.json({ message: 'Product created successfully' });
+        console.log('Product created successfully');
+    } catch (error) {
+        console.error('Error creating product:', error);
         res.status(500).json({ error: error.message });
     }
 });

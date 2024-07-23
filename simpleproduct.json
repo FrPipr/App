@@ -1,0 +1,11 @@
+{
+    "ID": "0000",
+    "Name": "Big eggs",
+    "Ingredients": "eggs",
+    "Allergens": "egg",
+    "ExpiryDate": "2025-12-31",
+    "CreationDate": "2024-07-23",
+    "Manufacturer": "Chicken S.P.A",
+    "Nutritional_information": "Protein: 60g,",
+    "Moreinfo": "Keep in the fridge at max 8°C degrees. Do not eat raw."
+  }

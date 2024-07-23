@@ -57,7 +57,7 @@ def scan():
     print("ATTEMPTING TO CONNECT:")
      # Send request to JavaScript server to get product details
     try: 
-        response = requests.get('http://localhost:3000/readProduct', json={'productId': item_code})
+        response = requests.get(f'http://localhost:3000/readProduct?productId={item_code}')
         if response.status_code == 200:
             productinfo = response.json()
             globals()["productinfo"]=productinfo
@@ -77,6 +77,20 @@ def ask():
     print(productinfo)
     bot_response = chatbot_response(user_input, item_code, productinfo)
     return jsonify({'message': bot_response})
+
+@app.route('/uploadProduct', methods=['POST'])
+def upload_product():
+    product_data = request.json
+    print("Uploading new product data:", product_data)
+    try:
+        response = requests.post('http://localhost:3000/uploadProduct', json=product_data)
+        if response.status_code == 200:
+            return jsonify({'message': 'Product uploaded successfully!'})
+        else:
+            return jsonify({'message': 'Failed to upload product.'}), 500
+    except Exception as e:
+        print("Error uploading product:", e)
+        return jsonify({'message': 'Error uploading product.'}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
