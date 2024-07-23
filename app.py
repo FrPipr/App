@@ -57,7 +57,7 @@ def scan():
     print("ATTEMPTING TO CONNECT:")
      # Send request to JavaScript server to get product details
     try: 
-        response = requests.post('http://localhost:3000/readProduct', json={'productId': item_code})
+        response = requests.get('http://localhost:3000/readProduct', json={'productId': item_code})
         if response.status_code == 200:
             productinfo = response.json()
             globals()["productinfo"]=productinfo

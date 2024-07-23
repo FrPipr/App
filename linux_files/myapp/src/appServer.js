@@ -256,7 +256,7 @@ async function readProductByID(contract, productId) {
     return result;
 }
 
-app.post('/readProduct', async (req, res) => {
+app.get('/readProduct', async (req, res) => {
     const { productId } = req.body;
     try {
         const network = gateway.getNetwork(channelName);
