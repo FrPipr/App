@@ -9,9 +9,9 @@ import prompts_variables_storage
 
 app = Flask(__name__)
 
-llm = Ollama(model="llama3")
+#llm = Ollama(model="llama3")
 #llm = Ollama(model="gemma2")
-#llm = Ollama(model="phi3")
+llm = Ollama(model="llama3.1")
 
 chat_history = []
 start = prompts_variables_storage.smaller_initprompt
