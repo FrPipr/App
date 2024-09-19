@@ -54,7 +54,9 @@ class SupplyChainContract extends Contract {
             Ingredients: ingredients,
             Allergens: allergens,
             Nutritional_information: nutritional_information,
-            Moreinfo: moreinfo
+            Moreinfo: moreinfo,
+            Movements: [],
+            SensorData: []
         };
 
         await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(product))));
@@ -105,7 +107,43 @@ class SupplyChainContract extends Contract {
         return productJSON && productJSON.length > 0;
     }
 
-   
+    async AddSensorData(ctx, id, temperature, humidity, timestamp) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            throw new Error(`Il prodotto ${id} non esiste.`);
+        }
+        const product = JSON.parse(productAsBytes.toString());
+    
+        // Aggiungi i dati del sensore alla cronologia del prodotto
+        product.SensorData.push({
+            Temperature: temperature,
+            Humidity: humidity,
+            Timestamp: timestamp
+        });
+    
+        await ctx.stub.putState(id, Buffer.from(JSON.stringify(product)));
+        console.info(`Dati del sensore aggiunti per il prodotto ${id}.`);
+    }
+
+    async UpdateProductLocation(ctx, id, newLocation, status, date) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            throw new Error(`Il prodotto ${id} non esiste.`);
+        }
+        const product = JSON.parse(productAsBytes.toString());
+    
+        //product.Status = status;
+    
+        // Aggiungi il movimento alla cronologia
+        product.Movements.push({
+            Location: newLocation,
+            Date: date,
+            Status: status
+        });
+    
+        await ctx.stub.putState(id, Buffer.from(JSON.stringify(product)));
+        console.info(`Prodotto ${id} aggiornato con successo.`);
+    }
 }
 
 module.exports = SupplyChainContract;

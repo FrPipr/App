@@ -329,6 +329,37 @@ app.post('/uploadProduct', async (req, res) => {
     }
 });
 
+
+app.post('/api/product/sensor', async (req, res) => {
+    try {
+        const { id, temperature, humidity, timestamp } = req.body;
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+
+        await contract.submitTransaction('AddSensorData', id, temperature.toString(), humidity.toString(), timestamp);
+
+        res.status(200).json({ message: `Dati del sensore aggiunti per il prodotto ${id}` });
+    } catch (error) {
+        console.error(`Failed to add sensor data: ${error}`);
+        res.status(500).json({ error: `Errore durante l'aggiunta dei dati del sensore: ${error.message}` });
+    }
+});
+
+// Endpoint per aggiornare la posizione del prodotto
+app.post('/api/product/movement', async (req, res) => {
+    try {
+        const { id, location, status, date } = req.body;
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+        await contract.submitTransaction('UpdateProductLocation', id, location, status, date);
+
+        res.status(200).json({ message: `Posizione del prodotto ${id} aggiornata con successo` });
+    } catch (error) {
+        console.error(`Failed to update product location: ${error}`);
+        res.status(500).json({ error: `Errore durante l'aggiornamento della posizione: ${error.message}` });
+    }
+});
+
 app.listen(3000, async () => {
     await initGateway();
     console.log('JavaScript server running on port 3000');

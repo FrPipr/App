@@ -92,5 +92,34 @@ def upload_product():
         print("Error uploading product:", e)
         return jsonify({'message': 'Error uploading product.'}), 500
 
+
+@app.route('/addSensorData', methods=['POST'])
+def add_sensor_data():
+    sensor_data  = request.json
+    print("Uploading sensor data:", sensor_data)
+    try:
+        response = requests.post('http://localhost:3000/api/product/sensor', json=sensor_data)
+        if response.status_code == 200:
+            return jsonify({'message': 'Product uploaded successfully!'})
+        else:
+            return jsonify({'message': 'Failed to upload product.'}), 500
+    except Exception as e:
+        print("Error uploading product:", e)
+        return jsonify({'message': 'Error uploading product.'}), 500
+
+@app.route('/addMovementsData', methods=['POST'])
+def add_movement_data():
+    movement_data  = request.json
+    print("Add movement data:", movement_data)
+    try:
+        response = requests.post('http://localhost:3000/api/product/movement', json=movement_data)
+        if response.status_code == 200:
+            return jsonify({'message': 'Product uploaded successfully!'})
+        else:
+            return jsonify({'message': 'Failed to upload product.'}), 500
+    except Exception as e:
+        print("Error uploading product:", e)
+        return jsonify({'message': 'Error uploading product.'}), 500
+
 if __name__ == "__main__":
     app.run(debug=True)
