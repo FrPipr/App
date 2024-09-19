@@ -345,7 +345,6 @@ app.post('/api/product/sensor', async (req, res) => {
     }
 });
 
-// Endpoint per aggiornare la posizione del prodotto
 app.post('/api/product/movement', async (req, res) => {
     try {
         const { id, location, status, date } = req.body;
@@ -359,6 +358,62 @@ app.post('/api/product/movement', async (req, res) => {
         res.status(500).json({ error: `Errore durante l'aggiornamento della posizione: ${error.message}` });
     }
 });
+
+app.post('/api/product/certification', async (req, res) => {
+    try {
+        const { id, certificationType, certifyingBody, issueDate } = req.body;
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+        await contract.submitTransaction('AddCertification', id, certificationType, certifyingBody, issueDate);
+
+        res.status(200).json({ message: `Certification added to product ${id}` });
+    } catch (error) {
+        console.error(`Failed to update certification: ${error}`);
+        res.status(500).json({ error: `Error while adding certification: ${error.message}` });
+    }
+});
+
+app.post('/api/product/verifyProductCompliance', async (req, res) => {
+    try {
+        const { id, maxTemperature, minHumidity } = req.body;
+
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+
+        // Call the smart contract function
+        const response = await contract.submitTransaction('VerifyProductCompliance', id, maxTemperature, minHumidity);
+
+        // Convert Uint8Array to Buffer
+        const bufferResponse = Buffer.from(response);
+
+        // Convert Buffer to string
+        const decodedResponse = bufferResponse.toString('utf-8');
+
+        // Log the decoded response for debugging
+        console.log('Decoded response from smart contract:', decodedResponse);
+
+        // Parse the response as JSON
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(decodedResponse);
+        } catch (err) {
+            console.error('Failed to parse JSON:', err.message);
+            return res.status(500).json({ error: `Invalid JSON format: ${decodedResponse}` });
+        }
+
+        // Check if the product is compliant
+        if (parsedResponse.compliant) {
+            res.status(200).json({ message: parsedResponse.message });
+        } else {
+            res.status(400).json({ error: parsedResponse.message });
+        }
+
+    } catch (error) {
+        console.error(`Failed to check product compliance: ${error}`);
+        res.status(500).json({ error: `Failed to check product compliance: ${error.message}` });
+    }
+});
+
 
 app.listen(3000, async () => {
     await initGateway();

@@ -56,7 +56,8 @@ class SupplyChainContract extends Contract {
             Nutritional_information: nutritional_information,
             Moreinfo: moreinfo,
             Movements: [],
-            SensorData: []
+            SensorData: [],
+            Certifications: []
         };
 
         await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(product))));
@@ -143,6 +144,97 @@ class SupplyChainContract extends Contract {
     
         await ctx.stub.putState(id, Buffer.from(JSON.stringify(product)));
         console.info(`Prodotto ${id} aggiornato con successo.`);
+    }
+
+    async VerifyProductCompliance(ctx, id, maxTemperature, minHumidity) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            return JSON.stringify({
+                compliant: false,
+                message: `The product ${id} does not exist.`
+            });
+        }
+    
+        const product = JSON.parse(productAsBytes.toString());
+    
+        // Check for temperature and humidity compliance
+        for (const data of product.SensorData) {
+            const temperature = parseFloat(data.Temperature);
+            const humidity = parseFloat(data.Humidity);
+    
+            if (isNaN(temperature) || isNaN(humidity)) {
+                return JSON.stringify({
+                    compliant: false,
+                    message: `Invalid temperature or humidity data for product ${id}.`
+                });
+            }
+    
+            if (temperature > parseFloat(maxTemperature)) {
+                return JSON.stringify({
+                    compliant: false,
+                    message: `The product ${id} has exceeded the maximum permitted temperature: ${temperature}°C.`
+                });
+            }
+            if (humidity < parseFloat(minHumidity)) {
+                return JSON.stringify({
+                    compliant: false,
+                    message: `The product ${id} had moisture below the required minimum: ${humidity}%.`
+                });
+            }
+        }
+    
+        return JSON.stringify({
+            compliant: true,
+            message: `The product ${id} complies with temperature and humidity requirements.`
+        });
+    }
+    
+    
+    
+
+    async AddCertification(ctx, id, certificationType, certifyingBody, issueDate) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            throw new Error(`Il prodotto ${id} non esiste.`);
+        }
+        const product = JSON.parse(productAsBytes.toString());
+    
+        product.Certifications.push({
+            CertificationType: certificationType,
+            CertifyingBody: certifyingBody,
+            IssueDate: issueDate
+        });
+    
+        await ctx.stub.putState(id, Buffer.from(JSON.stringify(product)));
+        console.info(`Certification added to product ${id}.`);
+    }
+
+    async VerifyCertification(ctx, id, requiredCertificationType) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            throw new Error(`Product ${id} does not exist.`);
+        }
+        const product = JSON.parse(productAsBytes.toString());
+    
+        // Check if the product has certifications
+        if (!product.Certifications || product.Certifications.length === 0) {
+
+            const res = JSON.stringify({ compliant: false, message: `Product ${id} has no certifications.` });
+            return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(res))));
+
+        }
+    
+        // Verify the product certification
+        for (const certification of product.Certifications) {
+            if (certification.CertificationType === requiredCertificationType) {
+                const res = JSON.stringify({ compliant: true, message: `Product ${id} is compliant with certification: ${requiredCertificationType}.` });
+                return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(res))));
+            }
+        }
+    
+        const res = JSON.stringify({ compliant: false, message: `Product ${id} is not compliant with the required certification: ${requiredCertificationType}.` });
+        return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(res))));
+
     }
 }
 

@@ -121,5 +121,36 @@ def add_movement_data():
         print("Error uploading product:", e)
         return jsonify({'message': 'Error uploading product.'}), 500
 
+@app.route('/addCertification', methods=['POST'])
+def add_certification_data():
+    certification_data  = request.json
+    print("Add certification data:", certification_data)
+    try:
+        response = requests.post('http://localhost:3000/api/product/certification', json=certification_data)
+        if response.status_code == 200:
+            return jsonify({'message': 'Product uploaded successfully!'})
+        else:
+            return jsonify({'message': 'Failed to upload product.'}), 500
+    except Exception as e:
+        print("Error uploading product:", e)
+        return jsonify({'message': 'Error uploading product.'}), 500
+
+
+@app.route('/verifyProductCompliance', methods=['POST'])
+def verify_product_compliance():
+    compliance_data  = request.json
+    print("Check if product is complaint:", compliance_data)
+    try:
+        response = requests.post('http://localhost:3000/api/product/verifyProductCompliance', json=compliance_data)
+        print(response.json())
+        if response.status_code == 200:
+            return jsonify({'message': 'Product is compliant!'})
+        else:
+            return jsonify({'message': 'Product is not complaint'}), 500
+    except Exception as e:
+        print("Error while checking product:", e)
+        return jsonify({'message': 'Error while checking product.'}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)
