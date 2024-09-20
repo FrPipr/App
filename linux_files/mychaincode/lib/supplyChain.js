@@ -73,26 +73,36 @@ class SupplyChainContract extends Contract {
         return productJSON.toString();
     }
     async UpdateProduct(ctx, id, name, manufacturer, creationDate, expiryDate, ingredients, allergens, nutritional_information, moreinfo) {
-        const exists = await this.ProductExists(ctx, id);
-        if (!exists) {
+        // Check if the product exists
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
             throw new Error(`The product ${id} does not exist`);
         }
-
-        // overwriting original product with new product
+    
+        // Parse the existing product data
+        const existingProduct = JSON.parse(productAsBytes.toString());
+    
+        // Update fields only if they are provided (i.e., not blank)
         const updatedProduct = {
             ID: id,
-            Name: name,
-            Manufacturer: manufacturer,
-            CreationDate: creationDate,
-            ExpiryDate: expiryDate,
-            Ingredients: ingredients,
-            Allergens: allergens,
-            Nutritional_information: nutritional_information,
-            Moreinfo: moreinfo
+            Name: name || existingProduct.Name,
+            Manufacturer: manufacturer || existingProduct.Manufacturer,
+            CreationDate: creationDate || existingProduct.CreationDate,
+            ExpiryDate: expiryDate || existingProduct.ExpiryDate,
+            Ingredients: ingredients || existingProduct.Ingredients,
+            Allergens: allergens || existingProduct.Allergens,
+            Nutritional_information: nutritional_information || existingProduct.Nutritional_information,
+            Moreinfo: moreinfo || existingProduct.Moreinfo,
+            Movements: existingProduct.Movements,
+            SensorData: existingProduct.SensorData,
+            Certifications: existingProduct.Certifications
         };
-        // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
-        return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(updatedProduct))));
+    
+        // Insert the updated product into the ledger in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
+        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(updatedProduct))));
+        return JSON.stringify(updatedProduct)
     }
+    
 
     // DeleteProduct deletes an given product from the world state.
     async DeleteProduct(ctx, id) {
@@ -141,6 +151,8 @@ class SupplyChainContract extends Contract {
             Date: date,
             Status: status
         });
+
+        product.Status = status
     
         await ctx.stub.putState(id, Buffer.from(JSON.stringify(product)));
         console.info(`Prodotto ${id} aggiornato con successo.`);
@@ -189,15 +201,25 @@ class SupplyChainContract extends Contract {
         });
     }
     
-    
-    
-
     async AddCertification(ctx, id, certificationType, certifyingBody, issueDate) {
+        // Retrieve the product data from the state
         const productAsBytes = await ctx.stub.getState(id);
         if (!productAsBytes || productAsBytes.length === 0) {
-            throw new Error(`Il prodotto ${id} non esiste.`);
+            throw new Error(`Product ${id} does not exist.`);
         }
+    
+        const complianceResult = await this.VerifyProductCompliance(ctx, id, 30, 50);
+        const complianceData = JSON.parse(complianceResult);
+    
+        if (!complianceData.compliant) {
+            throw new Error(`Certification cannot be added. ${complianceData.message}`);
+        }
+    
         const product = JSON.parse(productAsBytes.toString());
+
+        if(product.Status !== "Finalised") {
+            throw new Error(`Certification cannot be added. Product is not finalised}`);
+        }
     
         product.Certifications.push({
             CertificationType: certificationType,
@@ -208,8 +230,9 @@ class SupplyChainContract extends Contract {
         await ctx.stub.putState(id, Buffer.from(JSON.stringify(product)));
         console.info(`Certification added to product ${id}.`);
     }
+    
 
-    async VerifyCertification(ctx, id, requiredCertificationType) {
+    async VerifyCertification(ctx, id, requiredCertificationType) {//FIXME
         const productAsBytes = await ctx.stub.getState(id);
         if (!productAsBytes || productAsBytes.length === 0) {
             throw new Error(`Product ${id} does not exist.`);
@@ -218,10 +241,8 @@ class SupplyChainContract extends Contract {
     
         // Check if the product has certifications
         if (!product.Certifications || product.Certifications.length === 0) {
-
             const res = JSON.stringify({ compliant: false, message: `Product ${id} has no certifications.` });
             return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(res))));
-
         }
     
         // Verify the product certification
@@ -234,7 +255,34 @@ class SupplyChainContract extends Contract {
     
         const res = JSON.stringify({ compliant: false, message: `Product ${id} is not compliant with the required certification: ${requiredCertificationType}.` });
         return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(res))));
+    }
 
+    async GetAllMovements(ctx,id) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            throw new Error(`Product ${id} does not exist.`);
+        }
+        const product = JSON.parse(productAsBytes.toString());
+        return  JSON.stringify(product.Movements);
+    }
+
+
+    async GetAllSensorData(ctx,id) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            throw new Error(`Product ${id} does not exist.`);
+        }
+        const product = JSON.parse(productAsBytes.toString());
+        return  JSON.stringify(product.SensorData);
+    }
+
+    async GetAllCertifications(ctx,id) {
+        const productAsBytes = await ctx.stub.getState(id);
+        if (!productAsBytes || productAsBytes.length === 0) {
+            throw new Error(`Product ${id} does not exist.`);
+        }
+        const product = JSON.parse(productAsBytes.toString());
+        return  JSON.stringify(product.Certifications);
     }
 }
 
