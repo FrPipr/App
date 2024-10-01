@@ -65,3 +65,8 @@ questo avvierà il server che farà logging delle transazioni
 a questo punto, si può avviare la blockchain e scannerizzare i qrcode, si possono ottenere delle info del prodotto "product0123456789" già presente su blockchain
 
 
+L'interfaccia grafica è stata sviluppata con il framework React JS e per avviarla bisogna seguire i seguenti passaggi:
+- cd product-tracking
+- npm start
+
+L'interfaccia sarà raggiungibile all'indirizzo http://127.0.0.1:3001
