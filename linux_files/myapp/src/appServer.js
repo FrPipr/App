@@ -329,7 +329,157 @@ app.post('/uploadProduct', async (req, res) => {
     }
 });
 
+
+app.post('/api/product/sensor', async (req, res) => {
+    try {
+        const { id, temperature, humidity, timestamp } = req.body;
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+
+        await contract.submitTransaction('AddSensorData', id, temperature.toString(), humidity.toString(), timestamp);
+
+        res.status(200).json({ message: `Dati del sensore aggiunti per il prodotto ${id}` });
+    } catch (error) {
+        console.error(`Failed to add sensor data: ${error}`);
+        res.status(500).json({ error: `Errore durante l'aggiunta dei dati del sensore: ${error.message}` });
+    }
+});
+
+app.post('/api/product/movement', async (req, res) => {
+    try {
+        const { id, location, status, date } = req.body;
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+        await contract.submitTransaction('UpdateProductLocation', id, location, status, date);
+
+        res.status(200).json({ message: `Posizione del prodotto ${id} aggiornata con successo` });
+    } catch (error) {
+        console.error(`Failed to update product location: ${error}`);
+        res.status(500).json({ error: `Errore durante l'aggiornamento della posizione: ${error.message}` });
+    }
+});
+
+app.post('/api/product/certification', async (req, res) => {
+    try {
+        const { id, certificationType, certifyingBody, issueDate } = req.body;
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+        await contract.submitTransaction('AddCertification', id, certificationType, certifyingBody, issueDate);
+
+        res.status(200).json({ message: `Certification added to product ${id}` });
+    } catch (error) {
+        console.error(`Failed to update certification: ${error}`);
+        res.status(500).json({ error: `Error while adding certification: ${error.message}` });
+    }
+});
+
+app.post('/api/product/verifyProductCompliance', async (req, res) => {
+    try {
+        const { id, maxTemperature, minHumidity } = req.body;
+
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+        const response = await contract.evaluateTransaction('VerifyProductCompliance', id, maxTemperature, minHumidity);
+        const result = utf8Decoder.decode(response);
+        // Log the decoded response for debugging
+        console.log('Decoded response from smart contract:', result);
+
+        // Parse the response as JSON
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(result);
+        } catch (err) {
+            console.error('Failed to parse JSON:', err.message);
+            return res.status(500).json({ error: `Invalid JSON format: ${decodedResponse}` });
+        }
+
+        // Check if the product is compliant
+        if (parsedResponse.compliant) {
+            res.status(200).json({ message: parsedResponse.message });
+        } else {
+            res.status(400).json({ error: parsedResponse.message });
+        }
+
+    } catch (error) {
+        console.error(`Failed to check product compliance: ${error}`);
+        res.status(500).json({ error: `Failed to check product compliance: ${error.message}` });
+    }
+});
+
+app.get('/api/product/getMovements', async(req,res) => {
+    try {
+        const id = req.query.productId
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName)
+        const response = await contract.evaluateTransaction('GetAllMovements', id);
+        const result = utf8Decoder.decode(response);
+        console.log(result)
+        const resultJson = JSON.parse(result);
+        res.json(resultJson)
+    }
+    catch(error) {
+        console.error(`Failed to retrieve all movements: ${error}`);
+        res.status(500).json({ error: `Failed to retrieve all movements: ${error.message}` });
+    }
+})
+
+app.get('/api/product/getSensorData', async(req,res) => {
+    try {
+        const id = req.query.productId
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName)
+        const response = await contract.evaluateTransaction('GetAllSensorData', id);
+        const result = utf8Decoder.decode(response);
+        console.log(result)
+        const resultJson = JSON.parse(result);
+        res.json(resultJson)
+    }
+    catch(error) {
+        console.error(`Failed to retrieve all sensor data: ${error}`);
+        res.status(500).json({ error: `Failed to retrieve all sensor data: ${error.message}` });
+    }
+
+    app.get('/api/product/getCertifications', async(req,res) => {
+        try {
+            const id = req.query.productId
+            const network = gateway.getNetwork(channelName);
+            const contract = network.getContract(chaincodeName)
+            const response = await contract.evaluateTransaction('GetAllCertifications', id);
+            const result = utf8Decoder.decode(response);
+            console.log(result)
+            const resultJson = JSON.parse(result);
+            res.json(resultJson)
+        }
+        catch(error) {
+            console.error(`Failed to retrieve all certification data: ${error}`);
+            res.status(500).json({ error: `Failed to retrieve all certification data: ${error.message}` });
+        }
+    })
+})
+
+
+app.post('/api/product/updateProduct', async (req, res) => {
+    const productData = req.body;
+    console.log('Received product data:', productData);
+
+    const { id, name, manufacturer, creationDate, expiryDate, ingredients, allergens, nutritional_information, moreinfo } = productData;
+
+    try {
+        const network = gateway.getNetwork(channelName);
+        const contract = network.getContract(chaincodeName);
+        await contract.submitTransaction('UpdateProduct', id, name, manufacturer, creationDate, expiryDate, ingredients, allergens, nutritional_information ,moreinfo);
+        res.status(200).json({ message: `product updated` });
+    }   
+    
+    catch (error) {
+        console.error(`Failed to update product: ${error}`);
+        res.status(500).json({ error: `Failed to update product: ${error.message}` });
+    }
+});
+
 app.listen(3000, async () => {
     await initGateway();
     console.log('JavaScript server running on port 3000');
 });
+
+

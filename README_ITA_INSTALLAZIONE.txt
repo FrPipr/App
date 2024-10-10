@@ -65,3 +65,14 @@ questo avvierà il server che farà logging delle transazioni
 a questo punto, si può avviare la blockchain e scannerizzare i qrcode, si possono ottenere delle info del prodotto "product0123456789" già presente su blockchain
 
 
+L'interfaccia grafica è stata sviluppata con il framework React JS e per avviarla bisogna seguire i seguenti passaggi:
+- cd product-tracking
+
+Se sei su windows dovrai modificare il file package.json all'interno di product-tracking modificando la stringa "start" all'interno dell'oggetto json "script" come segue:
+
+"scripts": {
+    "start": "set PORT=3001 && set BROWSER=chrome && react-scripts start"    ..
+  }
+- npm start
+
+L'interfaccia sarà raggiungibile all'indirizzo http://127.0.0.1:3001
