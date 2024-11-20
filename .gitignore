@@ -1,0 +1,3 @@
+node_modules
+updateLocalEnv.sh
+*.pyc

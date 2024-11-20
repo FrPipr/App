@@ -1,0 +1,6 @@
+langchain_community
+flask
+requests
+flask_cors
+flask_jwt_extended
+bcrypt

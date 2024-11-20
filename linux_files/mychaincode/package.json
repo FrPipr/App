@@ -1,0 +1,50 @@
+{
+  "name": "supply-chain",
+  "version": "1.0.0",
+  "description": "Supply Chain Chaincode for Hyperledger Fabric",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint *.js */**.js",
+    "pretest": "npm run lint",
+    "test": "nyc mocha --recursive",
+    "start": "fabric-chaincode-node start"
+  },
+  "engineStrict": true,
+  "author": "FrPipr",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fabric-contract-api": "~2.5",
+    "fabric-shim": "~2.5",
+    "json-stringify-deterministic": "^1.0.0",
+    "sort-keys-recursive": "^2.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "chai": "^4.4.1",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.1",
+    "globals": "^15.11.0",
+    "mocha": "^10.4.0",
+    "nyc": "^15.1.0",
+    "sinon": "^18.0.0",
+    "sinon-chai": "^3.7.0"
+  },
+  "nyc": {
+    "exclude": [
+      "coverage/**",
+      "test/**",
+      "index.js",
+      ".eslintrc.js"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "all": true,
+    "check-coverage": true,
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
+  }
+}

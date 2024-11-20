@@ -1,0 +1,71 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+* {
+  text-align: center;
+}
+
+/* Colore dei placeholder */
+input::placeholder,
+textarea::placeholder,
+.form-control::placeholder,
+input[type="text"]::placeholder,
+input[type="password"]::placeholder,
+input[type="date"]::placeholder,
+input[type="email"]::placeholder,
+#expiryDate::placeholder,
+#creationDate::placeholder {
+  color: #cccccc !important;
+  opacity: 1 !important;
+}
+
+::-webkit-scrollbar {
+  width: 25px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 10px 10px #ececec;
+  border-left: solid 14px transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  box-shadow: inset 0 0 10px 10px #D3D0CB;
+  border-left: solid 14px transparent;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

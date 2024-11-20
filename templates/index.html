@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Demo</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <style>
+        #chat-container {
+            display: none;
+        }
+        #upload-container {
+            margin-top: 20px;
+        }
+        .upload-section, .chat-section {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot Demo</h1>
+
+    <div class="chat-section">
+        <button id="scan-code-btn">Scan QR Code</button>
+        <input type="text" id="input-code" placeholder="Enter code directly">
+        <button id="submit-code-btn">Submit Code</button>
+    </div>
+
+    <div id="qr-container" style="display: none;">
+        <video id="preview"></video>
+        <button id="stop-scan-btn">Stop Scanning</button>
+    </div>
+
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="user-input" placeholder="Type your message..." disabled>
+        <button id="send-btn" disabled>Send</button>
+    </div>
+
+    <div id="upload-container" class="upload-section">
+        <input type="file" id="upload-file">
+        <button id="upload-file-btn">Upload File</button>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+            let itemCode = '';
+            let botResponded = false;
+
+            // Handle QR code scanning
+            $('#scan-code-btn').click(function() {
+                $('#qr-container').show();
+                Instascan.Camera.getCameras().then(function(cameras) {
+                    if (cameras.length > 0) {
+                        scanner.start(cameras[0]);
+                    } else {
+                        console.error('No cameras found.');
+                    }
+                }).catch(function(e) {
+                    console.error(e);
+                });
+            });
+
+            scanner.addListener('scan', function(content) {
+                itemCode = content;
+                $('#qr-container').hide();
+                $('#chat-container').show();
+                sendScanData(itemCode);
+                scanner.stop();
+            });
+
+            $('#stop-scan-btn').click(function() {
+                scanner.stop();
+                $('#qr-container').hide();
+            });
+
+            // Handle code submission
+            $('#submit-code-btn').click(function() {
+                itemCode = $('#input-code').val().trim();
+                if (itemCode !== '') {
+                    $('#chat-container').show();
+                    sendScanData(itemCode);
+                }
+            });
+
+            function sendScanData(code) {
+                $.ajax({
+                    url: '/scan',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ item_code: code }),
+                    success: function(response) {
+                        $('#chat-messages').append('<div>Bot: ' + response.message + '</div>');
+                        $('#user-input').prop('disabled', false);
+                        $('#send-btn').prop('disabled', false);
+                        botResponded = true;
+                        scrollToBottom();
+                    },
+                    error: function(error) {
+                        console.log('Error:', error);
+                    }
+                });
+            }
+
+            $('#send-btn').click(function() {
+                if (botResponded) {
+                    sendMessage();
+                }
+            });
+
+            $('#user-input').keypress(function(event) {
+                var keycode = (event.keyCode ? event.keyCode : event.which);
+                if (keycode == '13' && botResponded) {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                var message = $('#user-input').val().trim();
+                if (message !== '') {
+                    $('#chat-messages').append('<div>You: ' + message + '</div>');
+                    $('#user-input').val('');
+                    scrollToBottom();
+                    sendRequest(message);
+                }
+            }
+
+            function sendRequest(message) {
+                $('#user-input').prop('disabled', true);
+                $('#send-btn').prop('disabled', true);
+                botResponded = false;
+
+                $.ajax({
+                    url: '/ask',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ message: message, item_code: itemCode }),
+                    success: function(response) {
+                        $('#chat-messages').append('<div>Bot: ' + response.message + '</div>');
+                        $('#user-input').prop('disabled', false);
+                        $('#send-btn').prop('disabled', false);
+                        botResponded = true;
+                        scrollToBottom();
+                    },
+                    error: function(error) {
+                        console.log('Error:', error);
+                    }
+                });
+            }
+
+            function scrollToBottom() {
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }
+
+            // Handle file upload
+            $('#upload-file-btn').click(function() {
+                const fileInput = document.getElementById('upload-file');
+                const file = fileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const jsonData = JSON.parse(event.target.result);
+                        uploadProductData(jsonData);
+                    };
+                    reader.readAsText(file);
+                } else {
+                    alert('Please select a file to upload.');
+                }
+            });
+
+            function uploadProductData(productData) {
+                $.ajax({
+                    url: '/uploadProduct',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(productData),
+                    success: function(response) {
+                        alert('Product uploaded successfully');
+                    },
+                    error: function(xhr, status, error) {
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            alert(xhr.responseJSON.message);
+                        } else {
+                            alert('Failed to upload product.');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

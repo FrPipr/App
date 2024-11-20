@@ -1,0 +1,111 @@
+[
+    {
+        "ID": "AGRI001",
+        "Name": "Whole Grain Oats",
+        "Manufacturer": "Healthy Grains Inc.",
+        "CreationDate": "2023-02-01",
+        "ExpiryDate": "2025-02-01",
+        "Moreinfo": "Gluten-free, high-fiber whole grain oats.",
+        "Ingredients": "",
+        "Allergens": "",
+        "Nutritional_information": "",
+        "HarvestDate": "2023-01-20",
+        "PesticideUse": "None",
+        "FertilizerUse": "Organic",
+        "CountryOfOrigin": "USA",
+        "Movements": [
+            {"Location": "Farm", "Status": "Harvested", "Date": "2023-01-20"},
+            {"Location": "Processing Unit", "Status": "Processed", "Date": "2023-02-01"},
+            {"Location": "Warehouse", "Status": "Stored", "Date": "2023-02-05"},
+            {"Location": "Retail Distribution", "Status": "Delivered", "Date": "2023-02-10"}
+        ],
+        "SensorData": [
+            {"SensorId": "sensor_501", "Temperature": 15, "Humidity": 50, "Timestamp": "2023-02-02T08:00:00Z"}
+        ],
+        "Certifications": [
+            {"CertificationType": "Gluten-Free", "CertifyingBody": "GFCO", "IssueDate": "2023-01-15"},
+            {"CertificationType": "Organic", "CertifyingBody": "Soil Association", "IssueDate": "2023-01-05"}
+        ]
+    },
+    {
+        "ID": "AGRI002",
+        "Name": "Fresh Carrots",
+        "Manufacturer": "Root Veggies Ltd.",
+        "CreationDate": "2023-03-01",
+        "ExpiryDate": "2023-06-01",
+        "Moreinfo": "Sweet and crunchy carrots grown locally.",
+        "Ingredients": "",
+        "Allergens": "",
+        "Nutritional_information": "",
+        "HarvestDate": "2023-02-25",
+        "PesticideUse": "Pesticides used",
+        "FertilizerUse": "Chemical",
+        "CountryOfOrigin": "Canada",
+        "Movements": [
+            {"Location": "Farm", "Status": "Harvested", "Date": "2023-02-25"},
+            {"Location": "Packing Facility", "Status": "Packed", "Date": "2023-02-28"},
+            {"Location": "Warehouse", "Status": "Stored", "Date": "2023-03-02"},
+            {"Location": "Retail Distribution", "Status": "Delivered", "Date": "2023-03-05"}
+        ],
+        "SensorData": [
+            {"SensorId": "sensor_502", "Temperature": 4, "Humidity": 75, "Timestamp": "2023-03-02T10:00:00Z"}
+        ],
+        "Certifications": [
+            {"CertificationType": "Organic", "CertifyingBody": "Organic Certification", "IssueDate": "2023-02-20"}
+        ]
+    },
+    {
+        "ID": "FIN001",
+        "Name": "Greek Yogurt",
+        "Manufacturer": "Dairy Best",
+        "CreationDate": "2023-01-15",
+        "ExpiryDate": "2023-03-15",
+        "Moreinfo": "Thick and creamy Greek yogurt with live cultures.",
+        "Ingredients": "Milk, Live Cultures",
+        "Allergens": "Milk",
+        "Nutritional_information": "Calories: 100 per 100g, Protein: 10g",
+        "HarvestDate": "",
+        "PesticideUse": "",
+        "FertilizerUse": "",
+        "CountryOfOrigin": "",
+        "Movements": [
+            {"Location": "Dairy Processing Plant", "Status": "Produced", "Date": "2023-01-15"},
+            {"Location": "Cold Storage", "Status": "Stored", "Date": "2023-01-16"},
+            {"Location": "Retail Outlet", "Status": "Delivered", "Date": "2023-01-18"}
+        ],
+        "SensorData": [
+            {"SensorId": "sensor_1001", "Temperature": 4, "Humidity": 65, "Timestamp": "2023-01-15T09:00:00Z"},
+            {"SensorId": "sensor_1002", "Temperature": 5, "Humidity": 60, "Timestamp": "2023-01-16T09:00:00Z"}
+        ],
+        "Certifications": [
+            {"CertificationType": "Non-GMO", "CertifyingBody": "Non-GMO Project", "IssueDate": "2022-12-10"},
+            {"CertificationType": "Grass-Fed", "CertifyingBody": "American Grassfed Association", "IssueDate": "2022-12-15"}
+        ]
+    },
+    {
+        "ID": "FIN002",
+        "Name": "Almond Butter",
+        "Manufacturer": "Nutty Delights",
+        "CreationDate": "2023-02-01",
+        "ExpiryDate": "2023-08-01",
+        "Moreinfo": "Smooth almond butter, perfect for spreading.",
+        "Ingredients": "Almonds, Salt, Oil",
+        "Allergens": "Almonds",
+        "Nutritional_information": "Calories: 200 per 30g, Fat: 15g, Protein: 6g",
+        "HarvestDate": "",
+        "PesticideUse": "",
+        "FertilizerUse": "",
+        "CountryOfOrigin": "",
+        "Movements": [
+            {"Location": "Manufacturing Plant", "Status": "Processed", "Date": "2023-02-01"},
+            {"Location": "Warehouse", "Status": "Stored", "Date": "2023-02-03"},
+            {"Location": "Retail Distribution", "Status": "Delivered", "Date": "2023-02-10"}
+        ],
+        "SensorData": [
+            {"SensorId": "sensor_1003", "Temperature": 20, "Humidity": 50, "Timestamp": "2023-02-02T10:00:00Z"}
+        ],
+        "Certifications": [
+            {"CertificationType": "Fair Trade", "CertifyingBody": "Fair Trade International", "IssueDate": "2023-01-15"}
+        ]
+    }
+]
